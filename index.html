@@ -1,0 +1,933 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calixto Marques Barbearia</title>
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Calixto">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Montserrat:ital,wght@0,700;1,800&display=swap">
+<style>
+/* Layout: app de celular numa coluna só, no molde da tela da Prestige: topo preto, banner que desliza, cartões que deslizam e barra preta embaixo com botão redondo no meio. */
+:root{
+  --bg:#F7F5F0; --surface:#FFFFFF; --line:#DDD7C9; --fg:#141413; --muted:#5E5A52;
+  --gold:#B08D3C; --gold-text:#8A6A22; --on-gold:#0B0B0B; --danger:#B3261E;
+  --bar:#000000; --bar-fg:#FFFFFF; --bar-gold:#C9A24B;
+  --display:'Montserrat',system-ui,sans-serif; --body:'Jost',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E0E0E; --surface:#171717; --line:#2A2A2A; --fg:#F3EFE6; --muted:#A8A39A;
+    --gold-text:#C9A24B; --danger:#F2867F; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E0E0E; --surface:#171717; --line:#2A2A2A; --fg:#F3EFE6; --muted:#A8A39A;
+  --gold-text:#C9A24B; --danger:#F2867F; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 16px/1.4 var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bar);z-index:10}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.bleed{margin-left:calc(-1 * max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)))}
+
+.shell{min-height:100%;display:flex;flex-direction:column;max-width:480px;margin:0 auto}
+.top,.tabs{margin-left:calc(-1 * max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)))}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bar);padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:4px}
+.brand{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0}
+.hand{height:17px;width:auto;flex:0 0 auto}
+.hand.flip{transform:scaleX(-1)}
+.name{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.name b{font:italic 800 14px/1 var(--display);color:var(--bar-fg);letter-spacing:.02em;white-space:nowrap}
+.name span{font:500 9px/1 var(--body);color:var(--bar-gold);letter-spacing:.5em;margin-right:-.5em}
+@media (max-width:350px){.hand{display:none}}
+.icon-btn{width:44px;height:44px;border:0;background:transparent;color:var(--bar-fg);display:grid;place-items:center;border-radius:50%}
+.spacer{width:44px;height:44px}
+
+main{flex:1;padding-block:0 28px;display:flex;flex-direction:column;gap:16px}
+main.pad{padding-top:20px}
+h1{font:400 26px/1.15 var(--body);margin:0;text-wrap:balance}
+h2{font:500 19px/1.2 var(--body);margin:0}
+.sec{font:400 23px/1.2 var(--body);margin:0}
+.muted{color:var(--muted)}
+.note{font-size:13px;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:10px;padding:10px 12px}
+.flash{font-size:14px;background:var(--surface);border:1px solid var(--gold);border-radius:10px;padding:10px 12px}
+.badge{align-self:flex-start;font:700 11px/1 var(--display);letter-spacing:.1em;background:var(--bar-gold);color:#0B0B0B;padding:5px 9px;border-radius:999px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.stack{display:flex;flex-direction:column;gap:10px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.row.wrap{flex-wrap:wrap}
+
+.btn{border:1px solid var(--line);background:transparent;border-radius:999px;padding:10px 18px;font-weight:500;min-height:44px}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:var(--on-gold);font-weight:600}
+.btn.gold[disabled]{opacity:.45;cursor:not-allowed}
+.btn.danger{border-color:var(--danger);color:var(--danger)}
+.btn.small{padding:6px 14px;min-height:36px;font-size:14px}
+
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
+.seg button{border:0;background:transparent;border-radius:999px;padding:10px 4px;font-weight:500;min-height:44px}
+.seg button[aria-pressed="true"]{background:var(--gold);color:var(--on-gold);font-weight:600}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:9px 16px;font-weight:500;min-height:44px}
+.chip[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:var(--on-gold);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips.scroll{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.chips.scroll::-webkit-scrollbar{display:none}
+.chips.scroll .chip{flex:0 0 auto}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;width:100%;padding:13px 16px;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
+.opt[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:var(--on-gold)}
+.slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.slot{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:11px 0;font-weight:500;min-height:44px}
+.slot[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:var(--on-gold);font-weight:600}
+.slot[disabled]{text-decoration:line-through;color:var(--muted);background:transparent;cursor:not-allowed}
+
+label{display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--muted)}
+input{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px;min-height:44px;color:var(--fg);width:100%}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.err{color:var(--danger);font-size:14px;min-height:1.2em}
+
+/* banners que deslizam */
+.car{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.car::-webkit-scrollbar{display:none}
+.ban{position:relative;flex:0 0 100%;scroll-snap-align:start;height:232px;border:0;text-align:left;color:#fff;padding:20px max(20px,env(safe-area-inset-left,0px)) 30px;display:flex;flex-direction:column;justify-content:center;gap:6px;overflow:hidden;border-radius:0}
+.ban .k{font:700 11px/1 var(--display);letter-spacing:.2em;color:var(--bar-gold)}
+.ban .t{font:800 25px/1.1 var(--display);max-width:56%}
+.ban .s{font-size:15px;color:#D9D4C8;max-width:56%}
+.ban .go{margin-top:8px;align-self:flex-start;background:var(--gold);color:#0B0B0B;font-weight:600;font-size:14px;padding:10px 20px;border-radius:999px}
+.ban .art{position:absolute;right:14px;top:50%;transform:translateY(-54%);width:132px;height:132px}
+.dots{display:flex;justify-content:center;gap:8px;margin-top:-24px;position:relative;height:3px}
+.dots i{display:block;height:3px;width:16px;border-radius:2px;background:#6B6350}
+.dots i.on{width:28px;background:var(--bar-gold)}
+
+.swipe{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:0 max(16px,env(safe-area-inset-right,0px)) 4px max(16px,env(safe-area-inset-left,0px))}
+.swipe::-webkit-scrollbar{display:none}
+.tile{flex:0 0 176px;scroll-snap-align:start;text-align:left;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--surface);padding:0;display:flex;flex-direction:column}
+.tile .pic{height:96px;display:grid;place-items:center}
+.tile .pic svg{width:80px;height:80px}
+.tile .tb{padding:12px 14px 14px;display:flex;flex-direction:column;gap:4px}
+.tile .tn{font-weight:500;font-size:18px;line-height:1.2}
+.tile .tm{font-size:14px;color:var(--muted)}
+.tile .tp{font-weight:600;color:var(--gold-text)}
+.svrow{display:flex;gap:14px;align-items:center}
+.thumb{flex:0 0 64px;height:64px;border-radius:12px;display:grid;place-items:center}
+.thumb svg{width:46px;height:46px}
+.svrow .info{display:flex;flex-direction:column;gap:3px;min-width:0}
+.svrow .title{font-weight:500;font-size:19px;line-height:1.2}
+.svrow .meta{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:15px}
+.price{color:var(--gold-text);font-weight:600}
+.artpick{display:flex;gap:8px}
+.artbtn{flex:1;border:1px solid var(--line);background:var(--bg);border-radius:10px;min-height:56px;display:grid;place-items:center;padding:4px}
+.artbtn[aria-pressed="true"]{border-color:var(--gold);outline:2px solid var(--gold)}
+.artbtn svg{width:36px;height:36px}
+
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:500;color:var(--muted)}
+.scroll-x{overflow-x:auto}
+.ok{color:var(--gold-text);font-weight:600}
+.no{color:var(--muted)}
+
+.appt .when{font:500 19px/1.2 var(--body)}
+.appt .what{color:var(--muted);font-size:15px}
+
+.tabs{position:sticky;bottom:0;z-index:5;background:var(--bar);padding:6px max(16px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;justify-content:space-around;align-items:flex-end}
+.tabs button{border:0;background:transparent;color:var(--bar-fg);display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;flex:1;min-height:52px;font-size:13px}
+.tabs button[aria-current="page"]{color:var(--bar-gold)}
+.tabs .round{flex:0 0 76px;height:68px;width:68px;border-radius:50%;border:4px solid var(--bar);background:var(--gold);color:#0B0B0B;margin-top:-30px;justify-content:center;padding:0;font-weight:600;font-size:11px;gap:2px}
+.tabs .round[aria-current="page"]{color:#0B0B0B;background:var(--bar-gold)}
+
+.login{display:flex;flex-direction:column;gap:16px;padding-top:12px}
+.hero{display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 0 6px;text-align:center}
+.hero img{height:54px}
+.hero .big{font:italic 800 24px/1.1 var(--display);letter-spacing:.02em}
+.hero .sub{font:500 11px/1 var(--body);color:var(--gold-text);letter-spacing:.5em;margin-right:-.5em}
+.link{background:none;border:0;color:var(--gold-text);text-decoration:underline;padding:10px;min-height:44px;align-self:center}
+.link2{background:none;border:0;color:var(--muted);font-size:14px;padding:8px 0;min-height:44px}
+.seg2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid3{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:10px}
+.num{padding:6px 12px;border-radius:999px;border:1px solid var(--gold);font-weight:600;letter-spacing:.04em}
+.num.win{background:var(--gold);color:var(--on-gold)}
+.prize{border-radius:16px;background:linear-gradient(135deg,#0B0B0B,#2A210C);border:1px solid var(--gold);padding:22px 20px;display:flex;flex-direction:column;gap:6px;color:#fff}
+.prize .k{font:700 11px/1 var(--display);letter-spacing:.2em;color:var(--bar-gold)}
+.prize .pz{font:800 34px/1.05 var(--display)}
+.prize .nm{color:#D9D4C8;font-size:16px}
+.prize .cert{color:var(--bar-gold);font-size:13px}
+
+/* --- ligado ao banco: fotos, carregando, bloqueio durante envio --- */
+.cover{width:100%;height:100%;object-fit:cover;display:block}
+.thumb{overflow:hidden}
+.tile .pic{overflow:hidden}
+.ban.photo .t,.ban.photo .s{max-width:80%}
+.photo{display:flex;gap:14px;align-items:center}
+.photo .thumb{background:var(--bg);border:1px dashed var(--line);flex:0 0 84px;height:84px}
+.filebtn{flex-direction:row;display:inline-flex;align-items:center;justify-content:center;color:var(--fg);font-size:14px;cursor:pointer}
+body.busy main{opacity:.55;pointer-events:none}
+body.busy .tabs{pointer-events:none}
+</style>
+</head>
+<body>
+<div class="shell" id="app"></div>
+<noscript><p style="padding:24px;color:#fff">Ative o JavaScript para usar o app.</p></noscript>
+<script src="config.js"></script>
+<script src="sb.js"></script>
+<script>
+(function(){
+  var HAND = "data:image/png;base64,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";
+  var CFG = window.CALIXTO_CONFIG || {};
+  var EMAIL_CODE = !!CFG.emailCode;   // true só depois de ligar um provedor de e-mail (SMTP) no Supabase
+  var STEP = 20, SPOFF = 3 * 3600000;               // Brasília = UTC-3 (sem horário de verão)
+  var ARTS = [["corte","Cabelo"],["barba","Barba"],["sobr","Sobrancelha"],["combo","Combo"]];
+  var BAN = { corte:["#0B0B0B","#1F190D"], barba:["#0B0B0B","#241414"], sobr:["#0B0B0B","#14202E"], combo:["#0B0B0B","#171F2E"], premio:["#0B0B0B","#2A210C"] };
+  var BANARTS = ARTS.concat([["premio","Prêmio"]]);
+  var DESTS = [["agendar","Agendar horário"],["sorteio","Sorteio"],["servicos","Serviços"],["agenda","Minha agenda"]];
+  var ESTILOS = ["Social","Degradê","Navalhado","Outro"];
+  var ROLE_LABEL = { cliente:"Cliente", barbeiro:"Barbeiro", admin:"Admin" };
+  var ROLEMAP = { client:"cliente", barber:"barbeiro", admin:"admin" };
+  var PERMS = [
+    ["Agendar e ver seus horários",1,0,1],["Ver agenda e concluir atendimento",0,1,1],["Cadastrar serviços e valores",0,1,1],
+    ["Criar sorteio e realizar o sorteio",0,1,1],["Ver clientes e números do sorteio",0,1,1],["Apagar um sorteio",0,0,1],["Banners, horários e equipe",0,0,1]
+  ];
+
+  var data = { allServices:[], services:[], banners:[], settings:{ serviceBanners:true, open:"09:00", close:"19:00", notice:2 }, sorteio:null, appts:[], busy:[], team:[] };
+  var ui = { user:null, loading:true, busy:false, tab:"inicio", authMode:"entrar", pending:null, forgot:false, newpass:false, editing:null, draftArt:"corte", draftPhoto:"", confirm:null, flash:"", error:"", book:null, sorteioEdit:false, bannerEdit:null, draftBanArt:"corte", draftBanDest:"agendar" };
+
+  /* ---------- utilidades ---------- */
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+  function money(v){ return v == null ? "valor a definir" : "R$ " + Number(v).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function p2(n){ return (n < 10 ? "0" : "") + n; }
+  function brDate(s){ if (!s) return ""; var a = s.split("-"); return a[2] + "/" + a[1] + "/" + a[0]; }
+  function toMin(t){ var a = t.split(":"); return (+a[0]) * 60 + (+a[1]); }
+  function fmt(m){ return p2(Math.floor(m/60)) + ":" + p2(m%60); }
+  function numFmt(n){ return "#" + ("000" + n).slice(-4); }
+  function fmtZap(z){ z = String(z||""); if (z.length === 11) return "("+z.slice(0,2)+") "+z.slice(2,7)+"-"+z.slice(7); if (z.length === 10) return "("+z.slice(0,2)+") "+z.slice(2,6)+"-"+z.slice(6); return z; }
+  function sp(ms){ var s = new Date(ms - SPOFF).toISOString(); return { date:s.slice(0,10), time:s.slice(11,16) }; }
+  function msOf(date, time){ return Date.parse(date + "T" + time + ":00-03:00"); }
+  function today(){ return sp(Date.now()).date; }
+  function addDays(date, n){ var d = new Date(date + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0,10); }
+  var WD = ["dom","seg","ter","qua","qui","sex","sáb"];
+  function dayShort(s){
+    var diff = Math.round((Date.parse(s + "T00:00:00Z") - Date.parse(today() + "T00:00:00Z")) / 86400000);
+    if (diff === 0) return "Hoje"; if (diff === 1) return "Amanhã";
+    return WD[new Date(s + "T00:00:00Z").getUTCDay()] + " " + s.slice(8,10) + "/" + s.slice(5,7);
+  }
+  function dayLong(s){ var k = dayShort(s); return (k === "Hoje" || k === "Amanhã") ? k + ", " + s.slice(8,10) + "/" + s.slice(5,7) : k; }
+  function isStaff(){ return ui.user && ui.user.role !== "cliente"; }
+  function guessArt(n){
+    n = (n || "").toLowerCase();
+    var sb = n.indexOf("sobrancelha") > -1, b = n.indexOf("barba") > -1, c = /corte|cabelo/.test(n);
+    if ((sb && (b || c)) || (b && c)) return "combo";
+    if (sb) return "sobr"; if (b) return "barba"; return "corte";
+  }
+  function svc(id){ for (var i=0;i<data.services.length;i++) if (data.services[i].id === id) return data.services[i]; return null; }
+  function svcAny(id){ for (var i=0;i<data.allServices.length;i++) if (data.allServices[i].id === id) return data.allServices[i]; return null; }
+  function artOf(s){ return s.art || guessArt(s.name); }
+  function sorteioOn(){ var s = data.sorteio; return !!(s && s.status === "aberto" && s.active); }
+  function numsFor(ids){ var n = 0; ids.forEach(function(id){ var sv = svc(id); n += sv ? (sv.nums == null ? 1 : sv.nums) : 1; }); return n; }
+  function friendly(e){
+    var m = (e && e.message) || String(e || "");
+    if (/Failed to fetch|NetworkError|Load failed/i.test(m)) return "Sem conexão com a internet. Tente de novo.";
+    if (/exclusion constraint/i.test(m)) return "Esse horário acabou de ficar indisponível. Escolha outro.";
+    if (/Invalid login credentials/i.test(m)) return "E-mail ou senha incorretos.";
+    if (/already registered|already been registered/i.test(m)) return "Esse e-mail já tem conta. Toque em Entrar.";
+    if (/expired or is invalid|Token has expired|otp_expired/i.test(m)) return "Código incorreto ou vencido. Peça outro.";
+    if (/not authorized|error sending|smtp|sending .*email/i.test(m)) return "Não deu para enviar o e-mail agora. Fale com a barbearia.";
+    if (/rate limit|too many|over_email_send_rate_limit|security purposes/i.test(m)) return "Muitos pedidos de código. Espere alguns minutos e tente de novo.";
+    if (/at least \d+ characters|weak_password|Password should/i.test(m)) return "A senha precisa ter pelo menos 6 caracteres.";
+    if (/not found|Signups not allowed|user_not_found/i.test(m)) return "Não achamos esse e-mail. Toque em Criar conta.";
+    if (/new row violates row-level|permission denied/i.test(m)) return "Sem permissão para essa ação.";
+    return m || "Algo deu errado. Tente de novo.";
+  }
+
+  /* ---------- dados (Supabase) ---------- */
+  function mapService(r){ return { id:r.id, name:r.name, min:r.minutes, price:(Number(r.price) > 0 ? Number(r.price) : null), nums:r.nums, art:(r.art === "sobrancelha" ? "sobr" : (r.art || guessArt(r.name))), photo:r.photo_url || "", active:r.active }; }
+  function mapBanner(r){ return { id:r.id, k:r.kicker || "", t:r.title, s:r.body || "", go:r.cta || "", art:r.art || "corte", photo:r.photo_url || "", dest:r.dest || "agendar", on:r.active }; }
+  function mapAppt(r){
+    var st = sp(Date.parse(r.starts_at)), pr = r.profiles || {};
+    return { id:r.id, client:pr.name || r.client_name || "Cliente", zap:pr.whatsapp || "", cid:r.client_id, serviceIds:r.service_ids || [],
+      names:(r.service_ids || []).map(function(id){ var s = svcAny(id); return s ? s.name : "Serviço"; }).join(" + "),
+      estilo:r.style || "", date:st.date, start:st.time, min:r.minutes, startMs:Date.parse(r.starts_at), endMs:Date.parse(r.ends_at),
+      status:(r.status === "pendente" || r.status === "confirmado") ? "ativo" : r.status };
+  }
+  async function refresh(){
+    var now = Date.now(), uid = ui.user && ui.user.id;
+    var res = await Promise.all([
+      SB.select("services", { order:"sort.asc,name.asc" }),
+      SB.select("settings", { f:{ id:"eq.1" } }),
+      SB.select("banners", { order:"sort.asc,title.asc" }),
+      SB.select("sorteios", { order:"created_at.desc", limit:1 }),
+      SB.select("appointments", { select:"*,profiles(name,whatsapp)", f:{ ends_at:"gte." + new Date(now - 86400000).toISOString() }, order:"starts_at.asc" }),
+      SB.rpc("busy_slots", { p_from:new Date(now).toISOString(), p_to:new Date(now + 9 * 86400000).toISOString() }),
+      ui.user && ui.user.role === "admin" ? SB.select("profiles", { select:"id,name,whatsapp,email,role", order:"created_at.asc" }) : Promise.resolve([])
+    ]);
+    data.allServices = res[0].map(mapService);
+    data.services = data.allServices.filter(function(s){ return s.active; });
+    var st = res[1][0];
+    if (st) data.settings = { serviceBanners:st.service_banners, open:String(st.open_time).slice(0,5), close:String(st.close_time).slice(0,5), notice:st.min_notice_hours };
+    data.banners = res[2].map(mapBanner);
+    data.appts = res[4].map(mapAppt);
+    data.busy = res[5].map(function(b){ return { s:Date.parse(b.starts_at), e:Date.parse(b.ends_at) }; });
+    data.team = res[6];
+    var so = res[3][0];
+    data.sorteio = null;
+    if (so && (so.status === "aberto" || so.status === "sorteado")){
+      var nums = await SB.select("sorteio_numbers", { select:"number,client_id,appointment_id,profiles(name,whatsapp)", f:{ sorteio_id:"eq." + so.id }, order:"number.asc" });
+      var entries = nums.map(function(n){ var p = n.profiles || {}; return { n:n.number, name:p.name || "", zap:p.whatsapp || "", cid:n.client_id, apptId:n.appointment_id }; });
+      var win = null;
+      if (so.status === "sorteado"){
+        var we = entries.filter(function(e){ return e.n === so.winner_number; })[0];
+        win = { n:so.winner_number, name:so.winner_name || (we && we.name) || "", zap:we ? we.zap : "", cid:so.winner_client, at:so.drawn_at };
+      }
+      data.sorteio = { id:so.id, name:so.title, prize:so.prize, drawDate:so.draw_date || "", cert:so.certificate || "", active:so.banner_on, status:so.status, winner:win, entries:entries };
+    }
+  }
+  async function enter(user){
+    var rows = await SB.select("profiles", { f:{ id:"eq." + user.id } });
+    var p = rows[0];
+    if (!p) throw new Error("Perfil não encontrado. Saia e entre de novo.");
+    ui.user = { id:user.id, role:ROLEMAP[p.role] || "cliente", name:p.name || "", zap:p.whatsapp || "", email:p.email || user.email || "" };
+    ui.tab = ui.user.role === "cliente" ? "inicio" : "agenda";
+    await refresh();
+  }
+  function wipe(){ ui.user = null; ui.authMode = "entrar"; ui.pending = null; ui.forgot = false; ui.newpass = false; ui.editing = null; ui.confirm = null; ui.book = null; ui.sorteioEdit = false; ui.bannerEdit = null; ui.flash = ""; data.appts = []; data.sorteio = null; data.team = []; }
+
+  /* ---------- fotos da galeria ---------- */
+  function resizeImage(file, max){
+    return new Promise(function(ok, no){
+      var img = new Image(), url = URL.createObjectURL(file);
+      img.onload = function(){
+        var r = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement("canvas");
+        c.width = Math.max(1, Math.round(img.width * r)); c.height = Math.max(1, Math.round(img.height * r));
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+        c.toBlob(function(b){ if (b) ok(b); else no(new Error("Não deu para ler a foto. Tente outra.")); }, "image/jpeg", 0.82);
+      };
+      img.onerror = function(){ no(new Error("Não deu para ler a foto. Tente outra.")); };
+      img.src = url;
+    });
+  }
+  function uuid(){ return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2); }
+  function photoPrevHtml(){ return ui.draftPhoto ? '<img class="cover" src="'+esc(ui.draftPhoto)+'" alt="Foto escolhida">' : '<span class="muted" style="font-size:12px;text-align:center">Sem foto</span>'; }
+  function photoField(){
+    return '<div class="muted" style="font-size:14px">Foto (opcional): aparece no lugar da ilustração</div>' +
+      '<div class="photo"><span class="thumb" id="photo-prev">'+photoPrevHtml()+'</span><div class="stack" style="gap:8px"><label class="btn small filebtn">Escolher da galeria<input id="photo-file" type="file" accept="image/*" hidden></label><button type="button" class="btn small" data-act="photo-clear">Remover foto</button></div></div>' +
+      '<div id="photo-msg" class="muted" style="font-size:13px"></div>';
+  }
+  function randInt(n){ var a = new Uint32Array(1); (window.crypto || window.msCrypto).getRandomValues(a); return a[0] % n; }
+
+  /* ---------- agenda ---------- */
+  function slotList(date, dur){
+    var open = toMin(data.settings.open), close = toMin(data.settings.close), now = Date.now(), out = [];
+    for (var s = open; s + dur <= close; s += STEP){
+      var a = msOf(date, fmt(s)), b = a + dur * 60000, busy = a <= now;
+      for (var i=0;i<data.busy.length && !busy;i++) if (a < data.busy[i].e && b > data.busy[i].s) busy = true;
+      out.push({ t: fmt(s), busy: busy });
+    }
+    return out;
+  }
+  function bookTotals(){
+    var sel = data.services.filter(function(s){ return ui.book.sel[s.id]; });
+    var t = { sel: sel, min: 0, price: 0, missing: false, nums: 0 };
+    sel.forEach(function(s){ t.min += s.min; t.nums += s.nums == null ? 1 : s.nums; if (s.price == null) t.missing = true; else t.price += s.price; });
+    return t;
+  }
+  function startBook(pre){
+    var first = today();
+    for (var i = 0; i < 7; i++){
+      var d = addDays(today(), i);
+      if (slotList(d, STEP).some(function(x){ return !x.busy; })){ first = d; break; }
+    }
+    ui.book = { sel:{}, estilo:"", date:first, time:"" };
+    if (pre && svc(pre)) ui.book.sel[pre] = true;
+    ui.tab = "agendar"; ui.error = "";
+  }
+  function gcal(a, staff){
+    var d = a.date.replace(/-/g,""), s = toMin(a.start), e = s + a.min;
+    function t(m){ return p2(Math.floor(m/60)) + p2(m%60) + "00"; }
+    var title = staff ? a.names + " - " + a.client : a.names + " - Calixto Marques Barbearia";
+    var det = staff ? "Cliente: " + a.client + " (" + fmtZap(a.zap) + ")" : "Calixto Marques Barbearia" + (a.estilo ? ". Tipo de corte: " + a.estilo : "");
+    return "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent(title) + "&dates=" + d + "T" + t(s) + "/" + d + "T" + t(e) + "&ctz=America%2FSao_Paulo&details=" + encodeURIComponent(det);
+  }
+  function banHtml(o){
+    var g = BAN[o.art] || BAN.corte;
+    var bg = o.photo ? 'linear-gradient(90deg,rgba(0,0,0,.84) 0%,rgba(0,0,0,.2) 100%),url(&quot;'+esc(o.photo)+'&quot;) center/cover' : 'linear-gradient(135deg,'+g[0]+' 0%,'+g[1]+' 100%)';
+    return '<button class="ban'+(o.photo?' photo':'')+'" data-act="'+o.act+'" data-id="'+esc(o.id||"")+'" data-v="'+esc(o.v||"")+'" style="background:'+bg+'" aria-label="'+esc(o.t)+'"><span class="k">'+esc(o.k)+'</span><span class="t">'+esc(o.t)+'</span>'+(o.s?'<span class="s">'+esc(o.s)+'</span>':'')+'<span class="go">'+esc(o.go)+'</span>'+(o.photo?'':'<span class="art">'+art(o.art)+'</span>')+'</button>';
+  }
+  function destAct(dest){ return (!dest || dest === "agendar") ? { act:"book", v:"" } : { act:"tab", v:dest }; }
+  function pic(s, t){ return s.photo ? '<img class="cover" src="'+esc(s.photo)+'" alt="">' : art(t); }
+
+  /* ---------- ilustrações ---------- */
+  var uid = 0;
+  function art(type){
+    uid++;
+    var G = "#C9A24B";
+    if (type === "barba") return '<svg viewBox="0 0 120 120" aria-hidden="true"><path d="M30 42c0-20 14-30 30-30s30 10 30 30v16c0 22-14 40-30 40S30 80 30 58z" fill="#4A4A4A"/><path d="M30 60c0 24 14 44 30 44s30-20 30-44c-6 8-14 12-30 12s-24-4-30-12z" fill="'+G+'"/><path d="M30 42c2-22 16-30 30-30s28 8 30 30c-8-10-18-14-30-14s-22 4-30 14z" fill="#8F7230"/><path d="M50 78h20" stroke="#0B0B0B" stroke-width="4" stroke-linecap="round"/></svg>';
+    if (type === "sobr") return '<svg viewBox="0 0 120 120" aria-hidden="true"><g fill="none" stroke="'+G+'" stroke-width="8" stroke-linecap="round"><path d="M12 46c10-16 30-20 44-10"/><path d="M108 46c-10-16-30-20-44-10"/></g><circle cx="36" cy="78" r="12" fill="#4A4A4A"/><circle cx="84" cy="78" r="12" fill="#4A4A4A"/><circle cx="36" cy="78" r="5" fill="#F3EFE6"/><circle cx="84" cy="78" r="5" fill="#F3EFE6"/></svg>';
+    if (type === "combo") return '<svg viewBox="0 0 120 120" aria-hidden="true"><defs><clipPath id="pc'+uid+'"><rect x="42" y="14" width="36" height="92" rx="16"/></clipPath></defs><g clip-path="url(#pc'+uid+')"><rect x="42" y="14" width="36" height="92" fill="#F4F1EA"/><g transform="rotate(-35 60 60)"><rect x="-20" y="-30" width="160" height="10" fill="#D6403A"/><rect x="-20" y="-18" width="160" height="10" fill="#2347A8"/><rect x="-20" y="18" width="160" height="10" fill="#D6403A"/><rect x="-20" y="30" width="160" height="10" fill="#2347A8"/><rect x="-20" y="66" width="160" height="10" fill="#D6403A"/><rect x="-20" y="78" width="160" height="10" fill="#2347A8"/><rect x="-20" y="114" width="160" height="10" fill="#D6403A"/><rect x="-20" y="126" width="160" height="10" fill="#2347A8"/></g></g><rect x="36" y="6" width="48" height="12" rx="4" fill="#B08D3C"/><rect x="36" y="102" width="48" height="12" rx="4" fill="#B08D3C"/></svg>';
+    if (type === "premio") return '<svg viewBox="0 0 140 140" aria-hidden="true"><g transform="rotate(8 70 70)"><rect x="24" y="30" width="104" height="64" rx="8" fill="#14110A" stroke="#7A6128" stroke-width="2.5"/></g><g transform="rotate(-10 70 70)"><rect x="18" y="42" width="104" height="64" rx="8" fill="#1F1A10" stroke="'+G+'" stroke-width="2.5"/><circle cx="70" cy="74" r="17" fill="none" stroke="'+G+'" stroke-width="2.5"/><text x="70" y="80" text-anchor="middle" font-size="16" font-weight="800" fill="'+G+'" font-family="sans-serif">R$</text></g></svg>';
+    return '<svg viewBox="0 0 120 120" aria-hidden="true"><g stroke="'+G+'" stroke-width="5" fill="none" stroke-linecap="round"><circle cx="34" cy="92" r="15"/><circle cx="86" cy="92" r="15"/><path d="M45 80 90 20"/><path d="M75 80 30 20"/></g><circle cx="60" cy="52" r="4" fill="'+G+'"/></svg>';
+  }
+  function ic(p, s){ return '<svg width="'+(s||24)+'" height="'+(s||24)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>'; }
+  var I = {
+    out: ic('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',22),
+    home: ic('<path d="M4 11l8-7 8 7v9H4z"/>'),
+    cut: ic('<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/>'),
+    cal: ic('<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',26),
+    chk: ic('<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18M9 15l2 2 4-4"/>'),
+    user: ic('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>'),
+    cog: ic('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/>'),
+    gift: ic('<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8M7.5 8a2.5 2.5 0 1 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 1 1 0 5"/>')
+  };
+
+  /* ---------- telas ---------- */
+  function header(){
+    return '<header class="top"><div class="spacer"></div>' +
+      '<div class="brand"><img class="hand" src="'+HAND+'" alt=""><div class="name"><b>CALIXTO MARQUES</b><span>BARBEARIA</span></div><img class="hand flip" src="'+HAND+'" alt=""></div>' +
+      (ui.user && isStaff() ? '<button class="icon-btn" data-act="logout" aria-label="Sair">'+I.out+'</button>' : '<div class="spacer"></div>') + '</header>';
+  }
+  function hero(){ return '<div class="hero"><img src="'+HAND+'" alt=""><div class="big">CALIXTO MARQUES</div><div class="sub">BARBEARIA</div></div>'; }
+
+  function authView(){
+    if (ui.loading) return '<main class="login">'+hero()+'<div class="note" role="status">Carregando…</div></main>';
+    if (ui.newpass){
+      return '<main class="login">'+hero()+'<form class="card" id="newpass-form" novalidate><h2>Crie uma nova senha</h2>' +
+        '<label for="f-pass">Nova senha<input id="f-pass" type="password" autocomplete="new-password" placeholder="Pelo menos 6 caracteres"></label>' +
+        '<div class="err" role="alert"></div><button class="btn gold" type="submit">Salvar e entrar</button></form></main>';
+    }
+    if (ui.pending){
+      var p = ui.pending;
+      return '<main class="login">'+hero()+'<form class="card" id="code-form" novalidate><h2>'+(p.kind==="reset"?"Código para a nova senha":"Confirme seu e-mail")+'</h2>' +
+        '<p class="muted" style="margin:0">Enviamos um código para <b>'+esc(p.email)+'</b>. Digite abaixo. Se não achar, olhe também a caixa de spam.</p>' +
+        '<label for="f-code">Código<input id="f-code" inputmode="numeric" maxlength="10" autocomplete="one-time-code" placeholder="Código do e-mail"></label>' +
+        '<div class="err" role="alert"></div><button class="btn gold" type="submit">Confirmar</button>' +
+        '<div class="row"><button class="btn small" type="button" data-act="resend">Reenviar código</button><button class="btn small" type="button" data-act="cancelsignup">Voltar</button></div></form></main>';
+    }
+    if (ui.forgot){
+      return '<main class="login">'+hero()+'<form class="card" id="forgot-form" novalidate><h2>Esqueci minha senha</h2>' +
+        '<p class="muted" style="margin:0">Digite o e-mail da sua conta. Enviamos um código para você criar uma senha nova.</p>' +
+        '<label for="f-email">E-mail<input id="f-email" type="email" inputmode="email" autocomplete="email" placeholder="voce@email.com"></label>' +
+        '<div class="err" role="alert"></div><button class="btn gold" type="submit">Enviar código</button>' +
+        '<button class="link" type="button" data-act="cancelforgot">Voltar</button></form></main>';
+    }
+    var m = ui.authMode;
+    var form = m === "entrar"
+      ? '<form class="card" id="login-form" novalidate><label for="f-email">E-mail<input id="f-email" type="email" inputmode="email" autocomplete="email" placeholder="voce@email.com"></label><label for="f-pass">Senha<input id="f-pass" type="password" autocomplete="current-password" placeholder="Sua senha"></label><div class="err" role="alert"></div><button class="btn gold" type="submit">Entrar</button>'+(EMAIL_CODE?'<button class="link" type="button" data-act="forgot">Esqueci minha senha</button>':'<div class="muted" style="font-size:13px">Esqueceu a senha? Fale com a barbearia.</div>')+'</form>'
+      : '<form class="card" id="signup-form" novalidate><label for="f-nome">Seu nome<input id="f-nome" autocomplete="name" placeholder="Ex.: João Silva"></label><label for="f-zap">WhatsApp<input id="f-zap" inputmode="tel" autocomplete="tel" placeholder="(00) 00000-0000"></label><label for="f-email">E-mail<input id="f-email" type="email" inputmode="email" autocomplete="email" placeholder="voce@email.com"></label><label for="f-pass">Crie uma senha<input id="f-pass" type="password" autocomplete="new-password" placeholder="Pelo menos 6 caracteres"></label><div class="err" role="alert"></div><button class="btn gold" type="submit">Criar conta</button><div class="muted" style="font-size:13px">Você cria a conta uma vez. '+(EMAIL_CODE?'Enviamos um código para o seu e-mail só na primeira vez.':'Depois entra só com e-mail e senha.')+'</div></form>';
+    return '<main class="login">'+hero()+'<div class="seg seg2" role="group" aria-label="Acesso">' +
+      [["entrar","Entrar"],["criar","Criar conta"]].map(function(k){ return '<button data-act="mode" data-v="'+k[0]+'" aria-pressed="'+(m===k[0])+'">'+k[1]+'</button>'; }).join("") + '</div>' + form + '</main>';
+  }
+
+  function inicioView(){
+    var list = data.services, bans = "", tiles = "", n = 0;
+    if (sorteioOn()){ n++; bans += banHtml({ act:"tab", v:"sorteio", k:"SORTEIO", t:data.sorteio.prize, s:"Ganhe números a cada atendimento", go:"Ver meus números", art:"premio" }); }
+    data.banners.forEach(function(b){ if (!b.on) return; var d = destAct(b.dest); n++; bans += banHtml({ act:d.act, v:d.v, k:b.k, t:b.t, s:b.s, go:b.go || "Ver mais", art:b.art, photo:b.photo }); });
+    list.forEach(function(s){
+      var t = artOf(s), g = BAN[t] || BAN.corte;
+      if (data.settings.serviceBanners){ n++; bans += banHtml({ act:"book", id:s.id, k:(t==="combo"?"MAIS PEDIDO":"SERVIÇO"), t:s.name, s:s.min+" min · "+money(s.price), go:"Agendar agora", art:t, photo:s.photo }); }
+      tiles += '<button class="tile" data-act="book" data-id="'+s.id+'"><span class="pic" style="background:linear-gradient(135deg,'+g[0]+','+g[1]+')">'+pic(s,t)+'</span><span class="tb"><span class="tn">'+esc(s.name)+'</span><span class="tm">'+s.min+' min</span><span class="tp">'+money(s.price)+'</span></span></button>';
+    });
+    if (!n && !list.length) return '<main class="pad"><div class="note">A barbearia ainda não cadastrou serviços.</div></main>';
+    var dots = ""; for (var i=0;i<n;i++) dots += '<i class="'+(i===0?'on':'')+'"></i>';
+    var car = n ? '<div class="bleed"><div class="car" id="car">'+bans+'</div><div class="dots" id="dots">'+dots+'</div></div>' : '';
+    return '<main'+(n?'':' class="pad"')+'>'+car+
+      '<div class="row" style="align-items:baseline"><h2 class="sec">Nossos serviços</h2><button class="link2" data-act="tab" data-v="servicos">Ver todos</button></div>' +
+      '<div class="bleed"><div class="swipe">'+tiles+'</div></div>' +
+      '<button class="btn gold" data-act="book" data-id="">Agendar meu horário</button></main>';
+  }
+
+  function serviceBlock(s){
+    var t = artOf(s), g = BAN[t] || BAN.corte;
+    var thumb = '<span class="thumb" style="background:linear-gradient(135deg,'+g[0]+','+g[1]+')">'+pic(s,t)+'</span>';
+    var info = '<div class="info"><div class="title">'+esc(s.name)+'</div><div class="meta"><span>'+s.min+' min</span><span class="price">'+money(s.price)+'</span>'+(isStaff()?'<span>'+s.nums+' nº sorteio</span>':'')+'</div></div>';
+    if (!isStaff()) return '<button class="card svrow" style="text-align:left;width:100%" data-act="book" data-id="'+s.id+'">'+thumb+info+'</button>';
+    if (ui.editing === s.id) return editForm(s);
+    var conf = ui.confirm === s.id;
+    return '<article class="card"><div class="svrow">'+thumb+info+'</div><div class="row wrap">' + (conf
+      ? '<span class="muted">Apagar este serviço?</span><span class="row"><button class="btn small danger" data-act="del-yes" data-id="'+s.id+'">Apagar</button><button class="btn small" data-act="del-no">Cancelar</button></span>'
+      : '<span class="row"><button class="btn small" data-act="edit" data-id="'+s.id+'">Editar</button><button class="btn small danger" data-act="del" data-id="'+s.id+'">Apagar</button></span>') + '</div></article>';
+  }
+  function editForm(s){
+    var isNew = s.id === "new";
+    return '<form class="card" id="svc-form" data-id="'+esc(s.id)+'" novalidate><h2>'+(isNew?"Novo serviço":"Editar serviço")+'</h2>' +
+      '<label for="e-name">Nome<input id="e-name" value="'+esc(s.name)+'" placeholder="Ex.: Barba e sobrancelha"></label>' +
+      '<div class="grid3"><label for="e-min">Minutos<input id="e-min" inputmode="numeric" value="'+esc(s.min||"")+'" placeholder="30"></label>' +
+      '<label for="e-price">Valor (R$)<input id="e-price" inputmode="decimal" value="'+(s.price==null?"":String(s.price).replace(".",","))+'" placeholder="0,00"></label>' +
+      '<label for="e-nums">Números<input id="e-nums" inputmode="numeric" value="'+esc(s.nums==null?1:s.nums)+'" placeholder="1"></label></div>' +
+      '<div class="muted" style="font-size:13px">Números: quantos números do sorteio o cliente ganha quando este serviço é concluído.</div>' +
+      '<div class="muted" style="font-size:14px">Ilustração do banner</div><div class="artpick">' +
+      ARTS.map(function(a){ return '<button type="button" class="artbtn" data-act="art" data-v="'+a[0]+'" aria-label="'+a[1]+'" aria-pressed="'+(ui.draftArt===a[0])+'" style="background:linear-gradient(135deg,'+BAN[a[0]][0]+','+BAN[a[0]][1]+')">'+art(a[0])+'</button>'; }).join("") + '</div>' +
+      photoField() +
+      '<div class="err" role="alert"></div><div class="row"><button class="btn" type="button" data-act="cancel">Cancelar</button><button class="btn gold" type="submit">Salvar</button></div></form>';
+  }
+  function servicosView(){
+    var staff = isStaff();
+    var newCard = ui.editing === "new" ? editForm({id:"new",name:"",min:"",price:null,nums:1}) : "";
+    return '<main class="pad"><h1>Nossos serviços</h1>' +
+      '<p class="muted" style="margin:0">'+(staff?"Estes são os serviços que o cliente vê ao agendar. O tempo define quanto da agenda cada um ocupa.":"Toque num serviço para agendar. Quando juntar mais de um, o tempo é somado.")+'</p>' +
+      (staff && ui.editing !== "new" ? '<button class="btn gold" data-act="new">Novo serviço</button>' : '') + newCard +
+      '<div class="stack">'+(data.services.map(serviceBlock).join("") || '<div class="note">Nenhum serviço cadastrado ainda.</div>')+'</div></main>';
+  }
+
+  function agendarView(){
+    var b = ui.book, tot = bookTotals(), days = [], i;
+    for (i=0;i<7;i++) days.push(addDays(today(), i));
+    var svcs = data.services.map(function(s){ return '<button class="opt" data-act="bsvc" data-id="'+s.id+'" aria-pressed="'+!!b.sel[s.id]+'"><span style="font-weight:500">'+esc(s.name)+'</span><span style="font-size:14px">'+s.min+' min</span></button>'; }).join("");
+    var est = ESTILOS.map(function(e){ return '<button class="chip" data-act="best" data-v="'+e+'" aria-pressed="'+(b.estilo===e)+'">'+e+'</button>'; }).join("");
+    var dch = days.map(function(d){ return '<button class="chip" data-act="bday" data-v="'+d+'" aria-pressed="'+(b.date===d)+'">'+dayShort(d)+'</button>'; }).join("");
+    var slots = tot.min > 0 ? slotList(b.date, tot.min) : [];
+    var free = slots.filter(function(s){ return !s.busy; }).length;
+    var grid = tot.min === 0 ? '<div class="note">Escolha um serviço para ver os horários.</div>'
+      : (free === 0 ? '<div class="note">Sem horários livres neste dia. Tente outro dia.</div>'
+      : '<div class="slots">'+slots.map(function(s){ return '<button class="slot" data-act="btime" data-v="'+s.t+'" aria-pressed="'+(b.time===s.t)+'"'+(s.busy?' disabled':'')+'>'+s.t+'</button>'; }).join("")+'</div>');
+    var ready = tot.min > 0 && b.time;
+    var sum = ready ? '<div class="card"><div class="row"><span class="muted">'+dayLong(b.date)+' às '+b.time+'</span><span class="muted">'+tot.min+' min</span></div><div class="row"><span style="font-weight:500">'+tot.sel.map(function(s){return esc(s.name);}).join(" + ")+'</span><span class="price">'+(tot.missing?(tot.price>0?money(tot.price)+" + a definir":"valor a definir"):money(tot.price))+'</span></div>'+(sorteioOn()?'<div class="muted" style="font-size:14px">Ao concluir o atendimento você ganha '+tot.nums+(tot.nums===1?' número':' números')+' no sorteio.</div>':'')+'</div>' : '';
+    return '<main class="pad"><h1>Agendar</h1>' +
+      '<section class="stack"><h2>1. Serviço</h2>'+svcs+'</section>' +
+      '<section class="stack"><h2>2. Tipo de corte <span class="muted" style="font-size:15px;font-weight:400">(opcional)</span></h2><div class="chips">'+est+'</div></section>' +
+      '<section class="stack"><h2>3. Dia</h2><div class="chips scroll bleed" style="padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:16px">'+dch+'</div></section>' +
+      '<section class="stack"><h2>4. Horário</h2>'+grid+'</section>' + sum +
+      '<div class="err" role="alert">'+esc(ui.error)+'</div>' +
+      '<button class="btn gold" data-act="bconfirm"'+(ready?'':' disabled')+'>Confirmar agendamento</button></main>';
+  }
+
+  function apptCard(a, staff){
+    var cancelable = (a.startMs - Date.now()) >= data.settings.notice * 3600000;
+    var conf = ui.confirm === a.id, acts;
+    if (staff){
+      acts = conf ? '<span class="muted">Cancelar este horário?</span><span class="row"><button class="btn small danger" data-act="acancel-yes" data-id="'+a.id+'">Cancelar horário</button><button class="btn small" data-act="del-no">Voltar</button></span>'
+        : '<span class="row"><button class="btn small gold" data-act="adone" data-id="'+a.id+'">Concluir</button><button class="btn small danger" data-act="acancel" data-id="'+a.id+'">Cancelar</button></span>';
+    } else if (!cancelable){
+      acts = '<span class="muted" style="font-size:14px">Cancelamento até '+data.settings.notice+' h antes. Fale com o barbeiro.</span>';
+    } else {
+      acts = conf ? '<span class="muted">Cancelar este horário?</span><span class="row"><button class="btn small danger" data-act="acancel-yes" data-id="'+a.id+'">Cancelar horário</button><button class="btn small" data-act="del-no">Voltar</button></span>'
+        : '<button class="btn small danger" data-act="acancel" data-id="'+a.id+'">Cancelar horário</button>';
+    }
+    return '<article class="card appt"><div class="when">'+dayLong(a.date)+' às '+a.start+'</div>' +
+      '<div class="what">'+esc(a.names)+(a.estilo?' · '+esc(a.estilo):'')+' · '+a.min+' min</div>' +
+      (staff?'<div class="what">'+esc(a.client)+' · '+fmtZap(a.zap)+'</div>'+(sorteioOn()?'<div class="what">Ao concluir: '+numsFor(a.serviceIds)+' números do sorteio</div>':''):'') +
+      '<a class="btn small" style="align-self:flex-start;text-decoration:none;display:inline-flex;align-items:center" href="'+esc(gcal(a,staff))+'" target="_blank" rel="noopener">Adicionar ao Google Agenda</a><div class="row wrap">'+acts+'</div></article>';
+  }
+  function agendaView(){
+    var staff = isStaff(), td = today();
+    var list = data.appts.filter(function(a){ return a.status === "ativo" && a.date >= td && (staff || a.cid === ui.user.id); })
+      .sort(function(x,y){ return x.startMs - y.startMs; });
+    var empty = staff ? '<div class="note">Nenhum horário marcado ainda.</div>'
+      : '<div class="card"><div class="muted">Você não tem horários marcados.</div><button class="btn gold" data-act="book" data-id="">Agendar agora</button></div>';
+    return '<main class="pad"><h1>'+(staff?"Agenda":"Meus horários")+'</h1>' +
+      '<div class="stack">'+(list.length ? list.map(function(a){ return apptCard(a, staff); }).join("") : empty)+'</div></main>';
+  }
+
+  /* sorteio: cliente */
+  function sorteioClienteView(){
+    var s = data.sorteio;
+    if (!s) return '<main class="pad"><h1>Sorteio</h1><div class="card"><div class="muted">Não tem sorteio acontecendo agora. Quando a barbearia abrir um, ele aparece aqui e na tela inicial.</div></div></main>';
+    var mine = s.entries.filter(function(e){ return e.cid === ui.user.id; });
+    var head = '<section class="prize"><span class="k">SORTEIO</span><span class="pz">'+esc(s.prize)+'</span><span class="nm">'+esc(s.name)+'</span>'+(s.drawDate?'<span class="nm">Sorteio em '+brDate(s.drawDate)+'</span>':'')+(s.cert?'<span class="cert">Certificado de autorização nº '+esc(s.cert)+'</span>':'')+'</section>';
+    var res = "";
+    if (s.winner){
+      var iWon = s.winner.cid === ui.user.id;
+      res = '<section class="card"><h2>Resultado</h2><div style="font:800 34px/1 var(--display)">'+numFmt(s.winner.n)+'</div><div class="muted">'+(iWon ? 'Parabéns, você ganhou! O barbeiro vai chamar você no WhatsApp.' : 'Número sorteado de '+esc((s.winner.name||"").split(" ")[0])+'.')+'</div></section>';
+    }
+    var chips = mine.length ? '<div class="chips">'+mine.map(function(e){ return '<span class="num'+(s.winner&&s.winner.n===e.n?' win':'')+'">'+numFmt(e.n)+'</span>'; }).join("")+'</div><div class="muted" style="font-size:14px">'+mine.length+(mine.length===1?' número':' números')+' neste sorteio.</div>' : '<div class="muted">Você ainda não tem números. Faça um atendimento na barbearia para ganhar.</div>';
+    var how = data.services.map(function(sv){ return '<div class="row"><span>'+esc(sv.name)+'</span><span class="price">'+sv.nums+(sv.nums===1?' número':' números')+'</span></div>'; }).join("");
+    return '<main class="pad"><h1>Sorteio</h1>'+head+res+'<section class="card"><h2>Meus números</h2>'+chips+'</section><section class="card"><h2>Como ganhar números</h2><div class="muted" style="font-size:14px">Os números chegam quando o barbeiro conclui o atendimento.</div>'+how+'</section></main>';
+  }
+
+  /* sorteio: barbeiro e admin */
+  function sorteioForm(s){
+    var isNew = !s;
+    return '<form class="card" id="sorteio-form" novalidate><h2>'+(isNew?"Criar sorteio":"Editar sorteio")+'</h2>' +
+      '<label for="s-name">Nome do sorteio<input id="s-name" value="'+esc(s?s.name:"")+'" placeholder="Ex.: Sorteio de novembro"></label>' +
+      '<label for="s-prize">Prêmio<input id="s-prize" value="'+esc(s?s.prize:"")+'" placeholder="Ex.: Pix de R$ 500"></label>' +
+      '<label for="s-date">Data do sorteio<input id="s-date" type="date" value="'+esc(s?s.drawDate:"")+'"></label>' +
+      '<label for="s-cert">Número do certificado de autorização (se já tiver)<input id="s-cert" value="'+esc(s?s.cert:"")+'" placeholder="Ex.: 00.000000/0000"></label>' +
+      '<div class="note">Sorteio com prêmio feito como propaganda precisa de autorização prévia da Secretaria de Prêmios e Apostas, do Ministério da Fazenda. Sem ela, a barbearia pode levar multa e ser impedida de fazer promoções. Confirme com um contador antes de divulgar.</div>' +
+      '<div class="err" role="alert"></div><div class="row">'+(isNew?'<span></span>':'<button class="btn" type="button" data-act="sorteio-cancel">Cancelar</button>')+'<button class="btn gold" type="submit">'+(isNew?"Criar sorteio":"Salvar")+'</button></div></form>';
+  }
+  function sorteioStaffView(){
+    var s = data.sorteio, admin = ui.user.role === "admin";
+    if (!s) return '<main class="pad"><h1>Sorteio</h1><p class="muted" style="margin:0">Crie o sorteio para o banner aparecer no app dos clientes. Os números são gerados quando você conclui cada atendimento.</p>'+sorteioForm(null)+'</main>';
+    if (ui.sorteioEdit) return '<main class="pad"><h1>Sorteio</h1>'+sorteioForm(s)+'</main>';
+    var groups = {}, order = [], won = s.winner ? s.winner.n : -1;
+    s.entries.forEach(function(e){ if (!groups[e.cid]){ groups[e.cid] = { name:e.name, zap:e.zap, ns:[] }; order.push(e.cid); } groups[e.cid].ns.push(e.n); });
+    var people = order.map(function(z){ var g = groups[z]; return '<div class="card" style="gap:8px"><div class="row"><b style="font-weight:500">'+esc(g.name)+'</b><span class="muted">'+fmtZap(g.zap)+'</span></div><div class="chips">'+g.ns.map(function(n){ return '<span class="num'+(n===won?' win':'')+'">'+numFmt(n)+'</span>'; }).join("")+'</div></div>'; }).join("");
+    var banner = s.winner ? '<div class="muted">Sorteio encerrado.</div>' : '<button class="chip" data-act="sorteio-toggle" aria-pressed="'+!!s.active+'">'+(s.active?"Banner ligado: números sendo gerados":"Banner desligado: pausado")+'</button>';
+    var win = s.winner ? '<section class="card"><h2>Ganhador</h2><div style="font:800 34px/1 var(--display)">'+numFmt(s.winner.n)+'</div><div>'+esc(s.winner.name)+' · '+fmtZap(s.winner.zap)+'</div><div class="muted" style="font-size:14px">Sorteado em '+new Date(s.winner.at).toLocaleString("pt-BR")+'</div></section>' : '';
+    var cf = ui.confirm, acts = "";
+    if (!s.winner){
+      acts += cf === "draw"
+        ? '<div class="row wrap"><span class="muted">Sortear agora? Não dá para desfazer.</span><span class="row"><button class="btn small gold" data-act="draw-yes">Sortear</button><button class="btn small" data-act="del-no">Voltar</button></span></div>'
+        : '<button class="btn gold" data-act="draw"'+(s.entries.length?'':' disabled')+'>Realizar sorteio</button>';
+    } else {
+      acts += cf === "newsorteio"
+        ? '<div class="row wrap"><span class="muted">Começar um novo sorteio? Os números atuais deixam de valer.</span><span class="row"><button class="btn small gold" data-act="newsorteio-yes">Começar novo</button><button class="btn small" data-act="del-no">Voltar</button></span></div>'
+        : '<button class="btn gold" data-act="newsorteio">Novo sorteio</button>';
+    }
+    if (admin) acts += cf === "delsorteio"
+      ? '<div class="row wrap"><span class="muted">Apagar este sorteio e todos os números?</span><span class="row"><button class="btn small danger" data-act="delsorteio-yes">Apagar</button><button class="btn small" data-act="del-no">Voltar</button></span></div>'
+      : '<button class="btn danger" data-act="delsorteio">Apagar sorteio (admin)</button>';
+    return '<main class="pad"><h1>Sorteio</h1>'+
+      '<section class="card"><h2>'+esc(s.name)+'</h2><div style="font:800 24px/1.1 var(--display)">'+esc(s.prize)+'</div>'+(s.drawDate?'<div class="muted">Data do sorteio: '+brDate(s.drawDate)+'</div>':'')+(s.cert?'<div class="muted">Certificado nº '+esc(s.cert)+'</div>':'')+banner+(s.winner?'':'<button class="btn small" data-act="sorteio-edit">Editar dados</button>')+'</section>'+
+      win + '<section class="stack"><h2>Clientes e números ('+s.entries.length+')</h2>'+(people||'<div class="note">Ainda ninguém tem número. Eles aparecem aqui quando você concluir atendimentos.</div>')+'</section>' + acts + '</main>';
+  }
+
+  function perfilView(){
+    return '<main class="pad"><h1>Perfil</h1><div class="card"><div><div class="muted" style="font-size:14px">Nome</div><div style="font-size:19px">'+esc(ui.user.name)+'</div></div><div><div class="muted" style="font-size:14px">WhatsApp</div><div style="font-size:19px">'+fmtZap(ui.user.zap)+'</div></div><div><div class="muted" style="font-size:14px">E-mail</div><div style="font-size:19px;overflow-wrap:anywhere">'+esc(ui.user.email)+'</div></div></div><button class="btn" data-act="logout">Sair</button></main>';
+  }
+
+  function teamSection(){
+    var staff = data.team.filter(function(p){ return p.role !== "client"; });
+    var rows = staff.map(function(p){
+      return '<div class="card" style="gap:8px"><div class="row"><b style="font-weight:500">'+esc(p.name||"Sem nome")+'</b><span class="muted">'+(p.role==="admin"?"Admin":"Barbeiro")+'</span></div><div class="muted" style="font-size:14px;overflow-wrap:anywhere">'+esc(p.email||"")+'</div>' +
+        (p.role==="barber" ? '<div><button class="btn small danger" data-act="role-set" data-id="'+esc(p.id)+'" data-v="client">Tirar acesso de barbeiro</button></div>' : '') + '</div>';
+    }).join("");
+    return '<section class="stack"><h2>Equipe</h2><p class="muted" style="margin:0;font-size:14px">O barbeiro cria a conta no app como cliente. Depois você digita o e-mail dele aqui para liberar a tela de barbeiro.</p>'+rows+
+      '<form class="card" id="team-form" novalidate><label for="t-email">E-mail do barbeiro<input id="t-email" type="email" inputmode="email" placeholder="barbeiro@email.com"></label><div class="err" role="alert"></div><button class="btn gold" type="submit">Liberar acesso de barbeiro</button></form></section>';
+  }
+  function ajustesView(){
+    var rows = PERMS.map(function(p){ return '<tr><td>'+esc(p[0])+'</td>'+[1,2,3].map(function(i){ return '<td>'+(p[i]?'<span class="ok">Sim</span>':'<span class="no">não</span>')+'</td>'; }).join("")+'</tr>'; }).join("");
+    return '<main class="pad"><h1>Ajustes</h1>' +
+      '<form class="card" id="hours-form" novalidate><h2>Horário de funcionamento</h2><div class="grid2"><label for="h-open">Abre<input id="h-open" type="time" value="'+esc(data.settings.open)+'"></label><label for="h-close">Fecha<input id="h-close" type="time" value="'+esc(data.settings.close)+'"></label></div>' +
+      '<label for="h-notice">Cancelar até quantas horas antes?<input id="h-notice" inputmode="numeric" value="'+esc(data.settings.notice)+'"></label><div class="err" role="alert"></div><button class="btn gold" type="submit">Salvar</button></form>' +
+      teamSection() + bannersSection() +
+      '<section class="card"><h2>Quem pode o quê</h2><div class="scroll-x"><table><thead><tr><th></th><th>Cliente</th><th>Barbeiro</th><th>Admin</th></tr></thead><tbody>'+rows+'</tbody></table></div></section></main>';
+  }
+
+  function bannerForm(b){
+    var isNew = !b;
+    return '<form class="card" id="banner-form" data-id="'+esc(b?b.id:"new")+'" novalidate><h2>'+(isNew?"Novo banner":"Editar banner")+'</h2>' +
+      '<label for="b-k">Etiqueta pequena (opcional)<input id="b-k" value="'+esc(b?b.k:"")+'" placeholder="Ex.: PROMOÇÃO"></label>' +
+      '<label for="b-t">Título<input id="b-t" value="'+esc(b?b.t:"")+'" placeholder="Ex.: Terça com 10% off"></label>' +
+      '<label for="b-s">Texto (opcional)<input id="b-s" value="'+esc(b?b.s:"")+'" placeholder="Ex.: Em todos os serviços"></label>' +
+      '<label for="b-go">Texto do botão<input id="b-go" value="'+esc(b?b.go:"")+'" placeholder="Ver mais"></label>' +
+      photoField() +
+      '<div class="muted" style="font-size:14px">Ilustração (usada quando não tem foto)</div><div class="artpick">' +
+      BANARTS.map(function(a){ return '<button type="button" class="artbtn" data-act="banart" data-v="'+a[0]+'" aria-label="'+a[1]+'" aria-pressed="'+(ui.draftBanArt===a[0])+'" style="background:linear-gradient(135deg,'+BAN[a[0]][0]+','+BAN[a[0]][1]+')">'+art(a[0])+'</button>'; }).join("") + '</div>' +
+      '<div class="muted" style="font-size:14px">Ao tocar no banner, abre</div><div class="chips">' +
+      DESTS.map(function(d){ return '<button type="button" class="chip" data-act="bandest" data-v="'+d[0]+'" aria-pressed="'+(ui.draftBanDest===d[0])+'">'+d[1]+'</button>'; }).join("") + '</div>' +
+      '<div class="err" role="alert"></div><div class="row"><button class="btn" type="button" data-act="bcancel">Cancelar</button><button class="btn gold" type="submit">Salvar</button></div></form>';
+  }
+  function bannersSection(){
+    var rows = data.banners.map(function(b){
+      if (ui.bannerEdit === b.id) return bannerForm(b);
+      var g = BAN[b.art] || BAN.corte, conf = ui.confirm === "ban:" + b.id;
+      return '<div class="card"><div class="svrow"><span class="thumb" style="background:linear-gradient(135deg,'+g[0]+','+g[1]+')">'+(b.photo?'<img class="cover" src="'+esc(b.photo)+'" alt="">':art(b.art))+'</span><div class="info"><div class="title">'+esc(b.t)+'</div><div class="meta"><span>'+esc(b.k||"sem etiqueta")+'</span><span>'+(b.on?"ligado":"desligado")+'</span></div></div></div><div class="row wrap">' +
+        (conf ? '<span class="muted">Apagar este banner?</span><span class="row"><button class="btn small danger" data-act="bdel-yes" data-id="'+b.id+'">Apagar</button><button class="btn small" data-act="del-no">Voltar</button></span>'
+          : '<span class="row"><button class="btn small" data-act="bedit" data-id="'+b.id+'">Editar</button><button class="btn small" data-act="bon" data-id="'+b.id+'">'+(b.on?"Desligar":"Ligar")+'</button><button class="btn small danger" data-act="bdel" data-id="'+b.id+'">Apagar</button></span>') + '</div></div>';
+    }).join("");
+    return '<section class="stack"><h2>Banners da tela inicial</h2><p class="muted" style="margin:0;font-size:14px">Eles passam sozinhos na tela inicial do cliente. O do sorteio aparece quando o sorteio está ligado.</p>' +
+      '<button class="chip" data-act="svcban" aria-pressed="'+!!data.settings.serviceBanners+'">'+(data.settings.serviceBanners?"Banners dos serviços: ligados":"Banners dos serviços: desligados")+'</button>' +
+      (rows || '<div class="note">Nenhum banner seu ainda. Os banners dos serviços aparecem sozinhos.</div>') +
+      (ui.bannerEdit === "new" ? bannerForm(null) : '<button class="btn gold" data-act="bnew">Novo banner</button>') + '</section>';
+  }
+
+  function tabbar(){
+    var u = ui.user;
+    function b(k, icon, label){ return '<button data-act="tab" data-v="'+k+'"'+(ui.tab===k?' aria-current="page"':'')+'>'+icon+'<span>'+label+'</span></button>'; }
+    if (u.role === "cliente"){
+      return '<nav class="tabs" aria-label="Seções">'+b("inicio",I.home,"Início")+b("sorteio",I.gift,"Sorteio")+
+        '<button class="round" data-act="book" data-id=""'+(ui.tab==="agendar"?' aria-current="page"':'')+' aria-label="Agendar">'+I.cal+'<span>Agendar</span></button>'+
+        b("agenda",I.chk,"Agenda")+b("perfil",I.user,"Perfil")+'</nav>';
+    }
+    return '<nav class="tabs" aria-label="Seções">'+b("agenda",I.chk,"Agenda")+b("servicos",I.cut,"Serviços")+b("sorteio",I.gift,"Sorteio")+(u.role==="admin"?b("ajustes",I.cog,"Ajustes"):"")+'</nav>';
+  }
+
+  function render(){
+    var focusId = document.activeElement && document.activeElement.id, body;
+    if (!ui.user) body = authView();
+    else {
+      var t = ui.tab, staff = isStaff();
+      body = t==="inicio" && !staff ? inicioView() : t==="servicos" ? servicosView() : t==="agendar" && !staff ? agendarView() : t==="sorteio" ? (staff ? sorteioStaffView() : sorteioClienteView()) : t==="perfil" && !staff ? perfilView() : t==="ajustes" && ui.user.role==="admin" ? ajustesView() : agendaView();
+    }
+    if (ui.flash) body = body.replace(/^(<main[^>]*>)/, '$1<div class="flash" role="status">' + esc(ui.flash) + '</div>');
+    document.getElementById("app").innerHTML = header() + body + (ui.user ? tabbar() : "");
+    if (focusId){ var el = document.getElementById(focusId); if (el) el.focus(); }
+  }
+  function parsePrice(t){
+    t = String(t).trim().replace(/\./g,"").replace(",",".");
+    if (t === "") return null;
+    var n = Number(t); return isFinite(n) && n >= 0 ? Math.round(n*100)/100 : NaN;
+  }
+  function reset(){ ui.editing = null; ui.confirm = null; ui.book = null; ui.sorteioEdit = false; ui.bannerEdit = null; ui.pending = null; ui.forgot = false; ui.newpass = false; }
+  function must(rows){ if (!rows || !rows.length) throw new Error("Sem permissão para essa ação."); return rows; }
+  async function refreshBusy(){
+    var now = Date.now(), rows = await SB.rpc("busy_slots", { p_from:new Date(now).toISOString(), p_to:new Date(now + 9 * 86400000).toISOString() });
+    data.busy = rows.map(function(b){ return { s:Date.parse(b.starts_at), e:Date.parse(b.ends_at) }; });
+  }
+  async function run(fn){
+    if (ui.busy) return;
+    ui.busy = true; document.body.classList.add("busy");
+    try { await fn(); } catch(e){ ui.flash = friendly(e); }
+    ui.busy = false; document.body.classList.remove("busy"); render();
+  }
+  function idle(){
+    return ui.user && !ui.busy && !ui.editing && !ui.bannerEdit && !ui.sorteioEdit && !ui.confirm && ui.tab !== "agendar" && ui.tab !== "ajustes";
+  }
+  function softRefresh(){ if (!idle()) return; refresh().then(function(){ if (idle()) render(); }).catch(function(){}); }
+
+  /* ---------- eventos ---------- */
+  document.addEventListener("scroll", function(e){
+    var t = e.target;
+    if (t && t.id === "car"){
+      var i = Math.round(t.scrollLeft / t.clientWidth), ds = document.querySelectorAll("#dots i");
+      for (var k=0;k<ds.length;k++) ds[k].className = k === i ? "on" : "";
+    }
+  }, true);
+
+  document.addEventListener("change", async function(e){
+    var t = e.target;
+    if (!t || t.id !== "photo-file" || !t.files || !t.files[0]) return;
+    var file = t.files[0], msg = document.getElementById("photo-msg"), form = t.closest("form");
+    var folder = form && form.id === "svc-form" ? "servicos" : "banners";
+    if (msg) msg.textContent = "Enviando a foto…";
+    try {
+      var blob = await resizeImage(file, 1280);
+      ui.draftPhoto = await SB.upload(folder + "/" + uuid() + ".jpg", blob);
+      var pv = document.getElementById("photo-prev"); if (pv) pv.innerHTML = photoPrevHtml();
+      if (msg) msg.textContent = "Foto pronta. Toque em Salvar para guardar.";
+    } catch(ex){ if (msg) msg.textContent = friendly(ex); }
+    try { t.value = ""; } catch(_){}
+  });
+
+  document.addEventListener("click", function(e){
+    var b = e.target.closest("[data-act]");
+    if (!b || ui.busy) return;
+    var act = b.getAttribute("data-act"), id = b.getAttribute("data-id"), v = b.getAttribute("data-v"), job = null;
+    if (act === "art" || act === "banart" || act === "bandest"){
+      if (act === "art") ui.draftArt = v; else if (act === "banart") ui.draftBanArt = v; else ui.draftBanDest = v;
+      var bs = document.querySelectorAll('[data-act="'+act+'"]');
+      for (var k=0;k<bs.length;k++) bs[k].setAttribute("aria-pressed", String(bs[k].getAttribute("data-v") === v));
+      return;
+    }
+    if (act === "photo-clear"){
+      ui.draftPhoto = ""; var pv = document.getElementById("photo-prev"); if (pv) pv.innerHTML = photoPrevHtml();
+      var pm = document.getElementById("photo-msg"); if (pm) pm.textContent = "";
+      return;
+    }
+    ui.flash = "";
+    if (act === "mode"){ ui.authMode = v; }
+    else if (act === "forgot"){ ui.forgot = true; }
+    else if (act === "cancelforgot"){ ui.forgot = false; }
+    else if (act === "resend"){
+      var pe = ui.pending;
+      job = async function(){ if (pe.kind === "reset") await SB.auth.sendCode(pe.email); else await SB.auth.resend(pe.email); ui.flash = "Código enviado de novo. Olhe também o spam."; };
+    }
+    else if (act === "cancelsignup"){ ui.pending = null; }
+    else if (act === "logout"){ job = async function(){ await SB.auth.signOut(); wipe(); }; }
+    else if (act === "tab"){
+      ui.tab = v; ui.error = ""; ui.confirm = null; ui.editing = null; ui.sorteioEdit = false; ui.bannerEdit = null;
+      if (v === "ajustes") job = async function(){ await refresh(); };
+    }
+    else if (act === "book"){ startBook(id); }
+    else if (act === "bsvc"){ ui.book.sel[id] = !ui.book.sel[id]; ui.book.time = ""; }
+    else if (act === "best"){ ui.book.estilo = ui.book.estilo === v ? "" : v; }
+    else if (act === "bday"){ ui.book.date = v; ui.book.time = ""; }
+    else if (act === "btime"){ ui.book.time = v; ui.error = ""; }
+    else if (act === "bconfirm"){
+      var tot = bookTotals(), bk = ui.book;
+      job = async function(){
+        await refreshBusy();
+        var ok = tot.min > 0 && bk.time && slotList(bk.date, tot.min).some(function(s){ return s.t === bk.time && !s.busy; });
+        if (!ok){ ui.error = "Esse horário acabou de ficar indisponível. Escolha outro."; bk.time = ""; return; }
+        var st = msOf(bk.date, bk.time);
+        try {
+          await SB.insert("appointments", { service_ids:tot.sel.map(function(s){ return s.id; }), style:bk.estilo, starts_at:new Date(st).toISOString(), ends_at:new Date(st + tot.min * 60000).toISOString(), minutes:tot.min });
+        } catch(ex){ if (/exclusion/i.test(ex.message)){ await refreshBusy(); bk.time = ""; } throw ex; }
+        ui.flash = "Horário marcado para " + dayLong(bk.date) + " às " + bk.time + "."; ui.book = null; ui.tab = "agenda"; ui.error = "";
+        await refresh();
+      };
+    }
+    else if (act === "acancel"){ ui.confirm = id; }
+    else if (act === "acancel-yes"){ job = async function(){ await SB.rpc("cancel_appointment", { p_id:id }); ui.confirm = null; ui.flash = "Horário cancelado."; await refresh(); }; }
+    else if (act === "adone"){
+      job = async function(){
+        var a = data.appts.filter(function(x){ return x.id === id; })[0], k = await SB.rpc("conclude_appointment", { p_id:id });
+        await refresh();
+        var got = data.sorteio ? data.sorteio.entries.filter(function(e){ return e.apptId === id; }).map(function(e){ return e.n; }) : [];
+        ui.flash = got.length ? "Atendimento concluído. " + (a ? a.client : "O cliente") + " ganhou " + got.length + (got.length === 1 ? " número: " : " números: ") + got.map(numFmt).join(", ") + "." : "Atendimento concluído.";
+      };
+    }
+    else if (act === "new"){ ui.editing = "new"; ui.draftArt = "corte"; ui.draftPhoto = ""; ui.error = ""; ui.confirm = null; }
+    else if (act === "edit"){ ui.editing = id; var s0 = svc(id); ui.draftArt = s0 ? artOf(s0) : "corte"; ui.draftPhoto = s0 ? s0.photo : ""; ui.error = ""; ui.confirm = null; }
+    else if (act === "cancel"){ ui.editing = null; }
+    else if (act === "del"){ ui.confirm = id; }
+    else if (act === "del-no"){ ui.confirm = null; }
+    else if (act === "del-yes"){ job = async function(){ must(await SB.update("services", { id:"eq." + id }, { active:false })); ui.confirm = null; ui.flash = "Serviço apagado."; await refresh(); }; }
+    else if (act === "sorteio-edit"){ ui.sorteioEdit = true; }
+    else if (act === "sorteio-cancel"){ ui.sorteioEdit = false; }
+    else if (act === "sorteio-toggle"){
+      job = async function(){ var s = data.sorteio; must(await SB.update("sorteios", { id:"eq." + s.id }, { banner_on:!s.active })); ui.flash = !s.active ? "Banner do sorteio ligado." : "Banner do sorteio desligado. Nenhum número novo é gerado."; await refresh(); };
+    }
+    else if (act === "draw"){ ui.confirm = "draw"; }
+    else if (act === "draw-yes"){ job = async function(){ await SB.rpc("draw_sorteio", { p_id:data.sorteio.id }); ui.confirm = null; ui.flash = "Sorteio realizado."; await refresh(); }; }
+    else if (act === "newsorteio"){ ui.confirm = "newsorteio"; }
+    else if (act === "newsorteio-yes"){ job = async function(){ must(await SB.update("sorteios", { id:"eq." + data.sorteio.id }, { status:"encerrado" })); ui.confirm = null; await refresh(); }; }
+    else if (act === "delsorteio"){ ui.confirm = "delsorteio"; }
+    else if (act === "delsorteio-yes"){ job = async function(){ must(await SB.remove("sorteios", { id:"eq." + data.sorteio.id })); ui.confirm = null; ui.flash = "Sorteio apagado."; await refresh(); }; }
+    else if (act === "bnew"){ ui.bannerEdit = "new"; ui.draftBanArt = "corte"; ui.draftBanDest = "agendar"; ui.draftPhoto = ""; ui.confirm = null; }
+    else if (act === "bedit"){ var bb = data.banners.filter(function(x){ return x.id === id; })[0]; if (bb){ ui.bannerEdit = id; ui.draftBanArt = bb.art; ui.draftBanDest = bb.dest || "agendar"; ui.draftPhoto = bb.photo; } ui.confirm = null; }
+    else if (act === "bcancel"){ ui.bannerEdit = null; }
+    else if (act === "bon"){ job = async function(){ var bn = data.banners.filter(function(x){ return x.id === id; })[0]; must(await SB.update("banners", { id:"eq." + id }, { active:!bn.on })); await refresh(); }; }
+    else if (act === "bdel"){ ui.confirm = "ban:" + id; }
+    else if (act === "bdel-yes"){ job = async function(){ must(await SB.remove("banners", { id:"eq." + id })); ui.confirm = null; ui.flash = "Banner apagado."; await refresh(); }; }
+    else if (act === "svcban"){ job = async function(){ must(await SB.update("settings", { id:"eq.1" }, { service_banners:!data.settings.serviceBanners })); await refresh(); }; }
+    else if (act === "role-set"){ job = async function(){ await SB.rpc("set_role", { p_user:id, p_role:v }); ui.flash = "Acesso atualizado."; await refresh(); }; }
+    if (job) run(job); else render();
+    if (act === "tab" || act === "book") window.scrollTo(0, 0);
+    if (act === "tab" && ui.user && v !== "ajustes") softRefresh();
+  });
+
+  document.addEventListener("submit", async function(e){
+    e.preventDefault();
+    if (ui.busy) return;
+    var f = e.target, err = "";
+    function val(id){ var el = document.getElementById(id); return el ? el.value : ""; }
+    var btn = f.querySelector('button[type="submit"]'), label = btn ? btn.textContent : "";
+    function lock(on){ ui.busy = on; document.body.classList.toggle("busy", on); if (btn){ btn.disabled = on; btn.textContent = on ? "Aguarde…" : label; } }
+    var okEmail = function(s){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s); };
+    try {
+      if (f.id === "login-form"){
+        var em = val("f-email").trim().toLowerCase(), pass = val("f-pass");
+        if (!okEmail(em)) err = "Digite um e-mail válido.";
+        else if (!pass) err = "Digite a senha.";
+        else {
+          lock(true);
+          try { var u = await SB.auth.signIn(em, pass); await enter(u); }
+          catch(ex){
+            if (/not confirmed/i.test(ex.message || "")){ ui.pending = { kind:"signup", email:em }; try { await SB.auth.resend(em); } catch(_){} }
+            else err = friendly(ex);
+          }
+        }
+      } else if (f.id === "signup-form"){
+        var nome = val("f-nome").trim(), zs = val("f-zap").replace(/\D/g,""), em2 = val("f-email").trim().toLowerCase(), ps = val("f-pass");
+        if (!nome) err = "Digite o seu nome.";
+        else if (zs.length < 10) err = "Digite o WhatsApp com DDD.";
+        else if (!okEmail(em2)) err = "Digite um e-mail válido.";
+        else if (ps.length < 6) err = "A senha precisa ter pelo menos 6 caracteres.";
+        else {
+          lock(true);
+          var r = await SB.auth.signUp(em2, ps, { name:nome, whatsapp:zs });
+          if (r.existing) err = "Esse e-mail já tem conta. Toque em Entrar.";
+          else if (r.session) await enter(SB.user());
+          else ui.pending = { kind:"signup", email:em2 };
+        }
+      } else if (f.id === "code-form"){
+        var code = val("f-code").replace(/\s/g,""), pd = ui.pending;
+        if (code.length < 6) err = "Digite o código que chegou no e-mail.";
+        else {
+          lock(true);
+          var uu = await SB.auth.verify(pd.email, code, pd.kind === "reset" ? "email" : "signup");
+          if (pd.kind === "reset"){ ui.pending = null; ui.newpass = true; }
+          else { ui.pending = null; await enter(uu); }
+        }
+      } else if (f.id === "forgot-form"){
+        var em3 = val("f-email").trim().toLowerCase();
+        if (!okEmail(em3)) err = "Digite um e-mail válido.";
+        else { lock(true); await SB.auth.sendCode(em3); ui.forgot = false; ui.pending = { kind:"reset", email:em3 }; }
+      } else if (f.id === "newpass-form"){
+        var np = val("f-pass");
+        if (np.length < 6) err = "A senha precisa ter pelo menos 6 caracteres.";
+        else { lock(true); await SB.auth.setPassword(np); ui.newpass = false; await enter(SB.user()); ui.flash = "Senha nova salva."; }
+      } else if (f.id === "svc-form"){
+        if (!isStaff()) return;
+        var name = val("e-name").trim(), min = parseInt(val("e-min"),10), price = parsePrice(val("e-price")), nums = parseInt(val("e-nums"),10);
+        if (!name) err = "Dê um nome ao serviço.";
+        else if (!(min >= 5 && min <= 480)) err = "Informe o tempo em minutos (de 5 a 480).";
+        else if (price !== null && isNaN(price)) err = "Valor inválido. Use números, como 35,00.";
+        else if (!(nums >= 0 && nums <= 20)) err = "Números do sorteio: de 0 a 20.";
+        else {
+          lock(true);
+          var row = { name:name, minutes:min, price:price == null ? 0 : price, nums:nums, art:ui.draftArt, photo_url:ui.draftPhoto || null }, sid = f.getAttribute("data-id");
+          if (sid === "new"){ row.sort = data.allServices.length + 1; await SB.insert("services", row); }
+          else must(await SB.update("services", { id:"eq." + sid }, row));
+          ui.editing = null; ui.flash = "Serviço salvo."; await refresh();
+        }
+      } else if (f.id === "sorteio-form"){
+        if (!isStaff()) return;
+        var sn = val("s-name").trim(), sp2 = val("s-prize").trim();
+        if (!sn) err = "Dê um nome ao sorteio.";
+        else if (!sp2) err = "Informe o prêmio.";
+        else {
+          lock(true);
+          var srow = { title:sn, prize:sp2, draw_date:val("s-date") || null, certificate:val("s-cert").trim() };
+          if (data.sorteio){ must(await SB.update("sorteios", { id:"eq." + data.sorteio.id }, srow)); ui.flash = "Sorteio atualizado."; }
+          else { srow.banner_on = true; srow.status = "aberto"; await SB.insert("sorteios", srow); ui.flash = "Sorteio criado. O banner já aparece no app dos clientes."; }
+          ui.sorteioEdit = false; await refresh();
+        }
+      } else if (f.id === "banner-form"){
+        if (!ui.user || ui.user.role !== "admin") return;
+        var bt = val("b-t").trim();
+        if (!bt) err = "Escreva o título do banner.";
+        else {
+          lock(true);
+          var brow = { kicker:val("b-k").trim(), title:bt, body:val("b-s").trim(), cta:val("b-go").trim() || "Ver mais", art:ui.draftBanArt, dest:ui.draftBanDest, photo_url:ui.draftPhoto || null }, bid = f.getAttribute("data-id");
+          if (bid === "new"){ brow.active = true; brow.sort = data.banners.length + 1; await SB.insert("banners", brow); }
+          else must(await SB.update("banners", { id:"eq." + bid }, brow));
+          ui.bannerEdit = null; ui.flash = "Banner salvo."; await refresh();
+        }
+      } else if (f.id === "team-form"){
+        if (!ui.user || ui.user.role !== "admin") return;
+        var te = val("t-email").trim().toLowerCase();
+        if (!okEmail(te)) err = "Digite um e-mail válido.";
+        else {
+          var findP = function(){ return data.team.filter(function(p){ return (p.email || "").toLowerCase() === te; })[0]; };
+          var person = findP();
+          if (!person){ lock(true); await refresh(); lock(false); person = findP(); }
+          if (!person) err = "Não achamos esse e-mail. A pessoa precisa criar a conta no app primeiro.";
+          else if (person.role !== "client") err = "Essa pessoa já tem acesso da barbearia.";
+          else { lock(true); await SB.rpc("set_role", { p_user:person.id, p_role:"barber" }); ui.flash = "Acesso de barbeiro liberado."; await refresh(); }
+        }
+      } else if (f.id === "hours-form"){
+        if (!ui.user || ui.user.role !== "admin") return;
+        var o = val("h-open"), c = val("h-close"), nt = parseInt(val("h-notice"),10);
+        if (!o || !c || toMin(c) <= toMin(o)) err = "O horário de fechar precisa ser depois do de abrir.";
+        else if (!(nt >= 0 && nt <= 72)) err = "Antecedência: de 0 a 72 horas.";
+        else { lock(true); must(await SB.update("settings", { id:"eq.1" }, { open_time:o, close_time:c, min_notice_hours:nt })); ui.flash = "Horários salvos."; await refresh(); }
+      }
+    } catch(ex){ err = friendly(ex); }
+    lock(false);
+    if (err){ var box = f.querySelector(".err"); if (box) box.textContent = err; else { ui.flash = err; render(); } return; }
+    ui.error = ""; render();
+    if (ui.user || ui.pending) window.scrollTo(0, 0);
+  });
+
+  document.addEventListener("visibilitychange", function(){ if (!document.hidden) softRefresh(); });
+  setInterval(function(){ if (!document.hidden) softRefresh(); }, 60000);
+  SB.onSignedOut(function(){ wipe(); render(); });
+
+  var lastTouch = 0;
+  ["pointerdown","touchstart","wheel"].forEach(function(ev){
+    document.addEventListener(ev, function(e){ if (e.target.closest && e.target.closest("#car")) lastTouch = Date.now(); }, { passive:true });
+  });
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!reduce) setInterval(function(){
+    var c = document.getElementById("car");
+    if (!c || document.hidden || Date.now() - lastTouch < 8000) return;
+    var w = c.clientWidth, n = c.children.length;
+    if (n < 2 || !w) return;
+    var i = Math.round(c.scrollLeft / w);
+    c.scrollTo({ left: ((i + 1) % n) * w, behavior: "smooth" });
+  }, 5000);
+
+  render();
+  (async function(){
+    try { var su = SB.user(); if (su && SB.session()) await enter(su); }
+    catch(e){ ui.flash = friendly(e); }
+    ui.loading = false; render();
+  })();
+})();
+
+</script>
+<script>
+if ("serviceWorker" in navigator) window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+</script>
+</body>
+</html>
